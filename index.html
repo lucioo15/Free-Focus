@@ -513,9 +513,23 @@
     let breakTotal = 0;
     let breakRemaining = 0;
     let ticker = null;
-    let sessions = [];
-    let totalFocusSec = 0;
-    let totalBreakSec = 0;
+
+    /* ── localStorage ── */
+    const LS_KEY = 'foco-libre-sessions';
+
+    function loadSessions() {
+      try {
+        return JSON.parse(localStorage.getItem(LS_KEY)) || [];
+      } catch(e) { return []; }
+    }
+
+    function saveSessions(arr) {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(arr)); } catch(e) {}
+    }
+
+    let sessions = loadSessions();
+    let totalFocusSec = sessions.reduce((a, s) => a + s.focus, 0);
+    let totalBreakSec = sessions.reduce((a, s) => a + s.breakTime, 0);
 
     const el = id => document.getElementById(id);
 
@@ -594,6 +608,26 @@
 
     showBannerIfNeeded();
 
+    /* ── Render saved sessions on load ── */
+    if (sessions.length > 0) {
+      const emptyEl = el('empty-hint');
+      if (emptyEl) emptyEl.remove();
+      clearBtn.style.display = 'block';
+      sessions.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.setAttribute('role','listitem');
+        item.innerHTML = `
+          <span class="h-num">#${i + 1}</span>
+          <span class="h-focus">${fmtShort(s.focus)} foco</span>
+          <span class="h-arrow">→</span>
+          <span class="h-break">${fmtShort(s.breakTime)} descanso</span>
+        `;
+        histList.appendChild(item);
+      });
+      updateStats();
+    }
+
     ringFill.style.strokeDasharray  = C;
     ringFill.style.strokeDashoffset = C;
 
@@ -667,6 +701,7 @@
 
       const n = sessions.length + 1;
       sessions.push({ focus: focusElapsed, breakTime: breakTotal });
+      saveSessions(sessions);
       totalFocusSec += focusElapsed;
       totalBreakSec += breakTotal;
       addHistoryItem(n, focusElapsed, breakTotal);
@@ -739,6 +774,7 @@
       sessions = [];
       totalFocusSec = 0;
       totalBreakSec = 0;
+      saveSessions([]);
       histList.innerHTML = '<div class="empty" id="empty-hint">tus sesiones aparecerán aquí</div>';
       clearBtn.style.display = 'none';
       updateStats();
