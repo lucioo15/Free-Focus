@@ -364,6 +364,54 @@
       font-family: 'Playfair Display', serif;
     }
 
+    /* ── Notif banner ── */
+    #notif-banner {
+      display: none;
+      width: 100%;
+      max-width: 380px;
+      margin-top: 12px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #notif-banner i { font-size: 16px; color: var(--muted); flex-shrink: 0; }
+
+    #notif-banner span { flex: 1; line-height: 1.4; }
+
+    #notif-allow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      border-radius: 100px;
+      padding: 5px 12px;
+      cursor: pointer;
+      color: var(--text);
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    #notif-allow:hover { background: var(--surface2); }
+
+    #notif-dismiss {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 16px;
+      padding: 0;
+      line-height: 1;
+      display: flex;
+    }
+
     /* ── Footer ── */
     footer {
       margin-top: 2rem;
@@ -445,6 +493,13 @@
 
   </main>
 
+  <div id="notif-banner" role="alert" style="display:none">
+    <i class="ti ti-bell" aria-hidden="true"></i>
+    <span>activá las notificaciones para saber cuándo termina el descanso</span>
+    <button id="notif-allow">activar</button>
+    <button id="notif-dismiss" aria-label="Cerrar"><i class="ti ti-x" aria-hidden="true"></i></button>
+  </div>
+
   <footer>
     <em>enfocate sin reloj · el descanso te espera</em>
   </footer>
@@ -464,6 +519,58 @@
 
     const el = id => document.getElementById(id);
 
+    /* ── Notifications ── */
+    let notifGranted = Notification.permission === 'granted';
+
+    function beep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const seq = [
+          { freq: 880, start: 0,    dur: 0.12 },
+          { freq: 880, start: 0.16, dur: 0.12 },
+          { freq: 1174, start: 0.32, dur: 0.22 },
+        ];
+        seq.forEach(({ freq, start, dur }) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.frequency.value = freq;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0, ctx.currentTime + start);
+          gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + start + 0.01);
+          gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+          osc.start(ctx.currentTime + start);
+          osc.stop(ctx.currentTime + start + dur + 0.05);
+        });
+      } catch(e) {}
+    }
+
+    function sendNotification() {
+      beep();
+      if (notifGranted) {
+        try {
+          new Notification('¡Descanso terminado!', {
+            body: 'Hora de volver a concentrarse. 🎯',
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="%23D85A30"/><text x="16" y="21" text-anchor="middle" font-size="16" fill="white">⏱</text></svg>',
+            tag: 'foco-libre-break',
+          });
+        } catch(e) {}
+      }
+    }
+
+    function requestNotifPermission() {
+      Notification.requestPermission().then(p => {
+        notifGranted = p === 'granted';
+        banner.style.display = 'none';
+      });
+    }
+
+    function showBannerIfNeeded() {
+      if (Notification.permission === 'default') {
+        banner.style.display = 'flex';
+      }
+    }
+
     const timeText   = el('time-text');
     const modeLabel  = el('mode-label');
     const dot        = el('dot');
@@ -480,6 +587,12 @@
     const statSess   = el('stat-sessions');
     const statFocus  = el('stat-focus');
     const statBreak  = el('stat-break');
+    const banner     = el('notif-banner');
+
+    el('notif-allow').addEventListener('click', requestNotifPermission);
+    el('notif-dismiss').addEventListener('click', () => { banner.style.display = 'none'; });
+
+    showBannerIfNeeded();
 
     ringFill.style.strokeDasharray  = C;
     ringFill.style.strokeDashoffset = C;
@@ -575,7 +688,7 @@
         breakRemaining--;
         timeText.textContent = fmt(breakRemaining);
         setRing(breakRemaining / breakTotal, 'var(--break)', 'var(--break)');
-        if (breakRemaining <= 0) finishBreak();
+        if (breakRemaining <= 0) { sendNotification(); finishBreak(); }
       }, 1000);
     }
 
