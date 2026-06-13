@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 680 680">
+  <title>Foco Libre</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1A1200; }
+      .track { stroke: #3A2800; }
+      .dot { fill: #FBF8F4; }
+    }
+  </style>
+
+  <rect width="680" height="680" rx="152" fill="#FBF8F4" class="bg"/>
+
+  <circle cx="340" cy="340" r="230" fill="none" stroke="#F0D9CC" stroke-width="36" class="track"/>
+
+  <circle
+    cx="340" cy="340" r="230"
+    fill="none"
+    stroke="#D85A30"
+    stroke-width="36"
+    stroke-linecap="round"
+    stroke-dasharray="1005"
+    stroke-dashoffset="290"
+    transform="rotate(-112 340 340)"
+  />
+
+  <circle cx="340" cy="340" r="28" fill="#2C2C2A" class="dot"/>
+  <circle cx="340" cy="340" r="10" fill="#D85A30"/>
+</svg>
