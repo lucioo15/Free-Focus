@@ -513,6 +513,7 @@
     let breakTotal = 0;
     let breakRemaining = 0;
     let ticker = null;
+    let lastNotif = null;
 
     /* ── localStorage ── */
     const LS_KEY = 'foco-libre-sessions';
@@ -563,7 +564,8 @@
       beep();
       if (notifGranted) {
         try {
-          new Notification('¡Descanso terminado!', {
+          if (lastNotif) lastNotif.close();
+          lastNotif = new Notification('¡Descanso terminado!', {
             body: 'Hora de volver a concentrarse. 🎯',
             icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="%23D85A30"/><text x="16" y="21" text-anchor="middle" font-size="16" fill="white">⏱</text></svg>',
             tag: 'foco-libre-break',
