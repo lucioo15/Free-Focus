@@ -700,6 +700,7 @@
       focusElapsed = Math.floor((Date.now() - focusStart) / 1000);
       breakTotal     = Math.max(1, Math.round(focusElapsed / 5));
       breakRemaining = breakTotal;
+      const breakStart = Date.now();
 
       const n = sessions.length + 1;
       sessions.push({ focus: focusElapsed, breakTime: breakTotal });
@@ -722,11 +723,12 @@
       timeText.textContent = fmt(breakRemaining);
 
       ticker = setInterval(() => {
-        breakRemaining--;
-        timeText.textContent = fmt(breakRemaining);
-        setRing(breakRemaining / breakTotal, 'var(--break)', 'var(--break)');
+        const elapsed = Math.floor((Date.now() - breakStart) / 1000);
+        breakRemaining = breakTotal - elapsed;
+        timeText.textContent = fmt(Math.max(breakRemaining, 0));
+        setRing(Math.max(breakRemaining, 0) / breakTotal, 'var(--break)', 'var(--break)');
         if (breakRemaining <= 0) { sendNotification(); finishBreak(); }
-      }, 1000);
+      }, 500);
     }
 
     /* ── BREAK END ── */
