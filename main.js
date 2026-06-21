@@ -7,6 +7,7 @@ let breakTotal = 0;
 let breakRemaining = 0;
 let ticker = null;
 let lastNotif = null;
+let notifTimeOut = null;
 
 /* ── localStorage ── */
 const LS_KEY = 'foco-libre-sessions';
@@ -215,18 +216,28 @@ function endFocus() {
   setRing(1, 'var(--break)', 'var(--break)');
   timeText.textContent = fmt(breakRemaining);
 
+  notifTimeOut = setTimeout(() => {
+    sendNotification();
+    notifTimeOut = null; 
+  }, breakRemaining * 1000);
+
   ticker = setInterval(() => {
     const elapsed = Math.floor((Date.now() - breakStart) / 1000);
     breakRemaining = breakTotal - elapsed;
     timeText.textContent = fmt(Math.max(breakRemaining, 0));
     setRing(Math.max(breakRemaining, 0) / breakTotal, 'var(--break)', 'var(--break)');
-    if (breakRemaining <= 0) { sendNotification(); finishBreak(); }
+    if (breakRemaining <= 0) { finishBreak(); }
   }, 500);
 }
 
 /* ── BREAK END ── */
 function finishBreak() {
   clearInterval(ticker);
+  if (notifTimeOut) {
+    clearTimeout(notifTimeOut);
+    sendNotification();
+    notifTimeOut = null;
+  }
   state = 'idle';
   modeLabel.className = 'mode-label';
   modeLabel.textContent = '¡muy bien! listo para otra';
@@ -244,6 +255,7 @@ function finishBreak() {
 /* ── RESET ── */
 function reset() {
   clearInterval(ticker);
+  clearTimeout(notfiTimeOut);
   state = 'idle';
   focusElapsed = 0;
   modeLabel.className = 'mode-label';
