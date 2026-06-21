@@ -255,7 +255,7 @@ function finishBreak() {
 /* ── RESET ── */
 function reset() {
   clearInterval(ticker);
-  clearTimeout(notfiTimeOut);
+  clearTimeout(notifTimeOut);
   state = 'idle';
   focusElapsed = 0;
   modeLabel.className = 'mode-label';
