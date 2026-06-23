@@ -128,15 +128,39 @@ ringFill.style.strokeDasharray = C;
 ringFill.style.strokeDashoffset = C;
 
 function fmt(s) {
-  const m = Math.floor(s / 60);
-  const h = Math.floor(m / 60);
-  return ((h > 0)? String(h).padStart(2, '0')+':' : '') + String(m % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  // Aseguramos que los segundos sean enteros por si se pasan decimales
+  s = Math.floor(s); 
+  
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  
+  ret = ''
+
+  if (h > 0) {
+    ret = String(h).padStart(2, '0') + ':' 
+  }
+
+  ret += String(m).padStart(2, '0') + ':' + 
+         String(sec).padStart(2, '0');
+  
+  return ret
 }
 
 function fmtShort(s) {
-  const m = Math.floor(s / 60);
-  const h = Math.floor(m / 60);
-  return ((h > 0)? String(h):'') + String(m % 60) + ':' + String(s % 60).padStart(2, '0');
+  s = Math.floor(s);
+  
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+
+  if (h > 0) {
+    // Si hay horas, mostramos la hora sin pad, pero los minutos SÍ llevan cero a la izquierda
+    return String(h) + ':' + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+  } else {
+    // Si no hay horas, mostramos los minutos sin pad
+    return String(m) + ':' + String(sec).padStart(2, '0');
+  }
 }
 
 function setRing(progress, color, glowColor) {
