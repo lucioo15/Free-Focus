@@ -130,13 +130,13 @@ ringFill.style.strokeDashoffset = C;
 function fmt(s) {
   const m = Math.floor(s / 60);
   const h = Math.floor(m / 60);
-  return ((h > 0)? String(h).padStart(2, '0'):'') + String(m % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  return ((h > 0)? String(h).padStart(2, '0')+':' : '') + String(m % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 }
 
 function fmtShort(s) {
   const m = Math.floor(s / 60);
   const h = Math.floor(m / 60);
-  return ((h > 0)? String(h):'' + String(m % 60) + ':') + String(s % 60).padStart(2, '0');
+  return ((h > 0)? String(h):'') + String(m % 60) + ':' + String(s % 60).padStart(2, '0');
 }
 
 function setRing(progress, color, glowColor) {
